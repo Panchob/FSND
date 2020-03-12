@@ -238,14 +238,3 @@ class ArtistForm(Form):
     )
     website = StringField('website', validators=[URL(), Optional()]
     )
-
-class ShowForm(Form):
-    artist_id = IntegerField(
-        'artist_id'
-    )
-    venue_id = IntegerField(
-        'venue_id'
-    )
-    start_time = DateTimeField(
-        'start_time'
-    )
