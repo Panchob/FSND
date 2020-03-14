@@ -57,9 +57,6 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-
   locations = Venue.query.with_entities(Venue.city, Venue.state).group_by(Venue.city, Venue.state).all()
 
   data = []
@@ -76,7 +73,7 @@ def venues():
       result['venues'].append({
         "id": venue.id,
         "name": venue.name,
-        "num_upcoming_shows": Venue.query.filter_by(id=venue.id).join(Show).count()
+        "num_upcoming_shows": Show.query.filter(Show.venue_id == venue.id and Show.start_time > datetime.now()).count()
       })
     data.append(result)
 
@@ -252,6 +249,7 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
+  form=ArtistForm()
   artist = Artist.query.get(artist)
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
@@ -259,7 +257,7 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
 
   form=ArtistForm()
-  artist = Artist.query.get(artist)
+  artist = Artist.query.get(artist_id)
 
   try:
     artist.name = form.name.data
@@ -285,12 +283,34 @@ def edit_artist_submission(artist_id):
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
   venue = Venue.query.get(venue_id)
+  form=VenueForm()
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
+  form=VenueForm()
+  venue = Venue.query.get(venue_id)
+
+  try:
+    venue.name = form.name.data
+    venue.city = form.city.data,
+    venue.state = form.state.data,
+    venue.address = form.address.data,
+    venue.phone = form.phone.data,
+    venue.website = form.website.data,
+    venue.facebook_link = form.facebook_link.data,
+    venue.seeking_talent = form.seeking_venue.data,
+    venue.seeking_description = form.seeking_description.data,
+    venue.image_link = form.image_link.data
+
+    db.session.add(venue)
+    db.commit()
+    flash('Venue updated')
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -340,10 +360,6 @@ def create_artist_submission():
 
 @app.route('/shows')
 def shows():
-  # displays list of shows at /shows
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-
   data=db.session.query(Show.venue_id.label('venue_id'),
                         Venue.name.label('venue_name'), Show.artist_id, 
                         Show.artist_id.label('artist_id'),

@@ -73,7 +73,29 @@
 		</div>
 		{% endfor %}
 	</div>
+	<a id="venue-edit" href="" class="btn btn-primary a-btn-slide-text">
+		<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+		<span><strong>Edit - not working (yet)</strong></span>            
+  </a>
+  <a id="venue-delete" href="" class="btn btn-primary a-btn-slide-text">
+	  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+		<span><strong>Delete - not working (yet)</strong></span>            
+  </a>
 </section>
+<script>
+	document.getElementById("venue-edit").onclick = function(e){
+		const venue_id = e.target.dataset['id'];
+		fetch("/venues/" + venue_id + "/edit", {
+			method: 'GET'
+		});
+	}
+	document.getElementById("venue-delete").onclick = function(e){
+		const venue_id = e.target.dataset['id'];
+		fetch("/venues/" + venue_id, {
+			method: 'DELETE'
+		});
+	}
+</script>
 
 {% endblock %}
 
