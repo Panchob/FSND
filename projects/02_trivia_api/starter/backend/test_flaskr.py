@@ -35,7 +35,7 @@ class TriviaTestCase(unittest.TestCase):
         self.quiz_data_art = {
             'quiz_category': {
                 'id': 2,
-                'type': 'Science'
+                'type': 'Art'
             },
             'previous_questions':[16]
         }
@@ -59,7 +59,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
 
-    def test_404_sent_requesting_beyond_valid_page(self):
+    def test_404_questions_requesting_beyond_valid_page(self):
         res = self.client().get('/questions?page=1000000')
         data = json.loads(res.data)
 
@@ -75,13 +75,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
     
     def test_create_new_question(self):
-        res = self.client().post('/add', json=self.new_question)
+        res = self.client().post('/questions/add', json=self.new_question)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
-        self.assertTrue(len(data['questions']))
     
     def test_delete_question(self):
         res = self.client().delete('/questions/12')
@@ -92,17 +91,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['deleted'], 12)
-        self.assertTrue(data['totalQuestions'])
-        self.assertTrue(len(data['questions']))
         self.assertEqual(question, None)
 
 
-    def test_422_question_not_found_for_delete(self):
+    def test_422_delete_question_bd_error(self):
         res = self.client().delete('/questions/140000')
-        data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 422)
-        self.assertEqual(data['success'], False)
         
     
     def test_search_questions(self):
@@ -122,9 +117,16 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(len(data['questions']))
         self.assertEqual(len(data['questions']), 3)
+
+    def test_list_questions_from_non_existing_category(self):
+        res = self.client().get('/categories/18/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
     
     def test_get_questions_for_quiz_with_category(self):
-        res = self.client().post('quizzes', json = self.quiz_data_art)
+        res = self.client().post('/quiz/play', json = self.quiz_data_art)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -132,7 +134,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['question']['id'] not in self.quiz_data_art['previous_questions'])
 
     def test_get_questions_for_quiz_without_category(self):
-        res = self.client().post('quizzes', json = self.quiz_data_all)
+        res = self.client().post('/quiz/play', json = self.quiz_data_all)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)

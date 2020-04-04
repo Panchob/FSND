@@ -63,7 +63,7 @@ def create_app(test_config=None):
       'categories':categories,
     })
 
-  @app.route('/add', methods=['POST'])
+  @app.route('/questions/add', methods=['POST'])
   def create_new_question():
     body = request.get_json()
 
@@ -78,13 +78,9 @@ def create_app(test_config=None):
       db.session.add(new_question)
       db.session.commit()
 
-      selection = Question.query.order_by(Question.id).all()
-      current_questions = paginate_questions(request, selection)
-
       return jsonify({
         'success':True,
-        'created':new_question.id,
-        'questions':current_questions,
+        'created':new_question.id
       }), 200
     except:
       db.session.rollback()
@@ -104,14 +100,9 @@ def create_app(test_config=None):
       db.session.delete(question)
       db.session.commit()
 
-      selection = Question.query.order_by(Question.id).all()
-      current_questions = paginate_questions(request, selection)
-
       return jsonify({
         'success':True,
-        'deleted':question_id,
-        'questions':current_questions,
-        'totalQuestions':len(Question.query.all())
+        'deleted':question_id
       })
     
     except:
@@ -142,6 +133,9 @@ def create_app(test_config=None):
     questions = [question.format() for question in selection]
     category = Category.query.get(category_id)
 
+    if category == None:
+      abort(404)
+
     return jsonify({
       'success':True,
       'questions':questions,
@@ -149,7 +143,7 @@ def create_app(test_config=None):
       'currentCategory':category.type
     })
 
-  @app.route('/quizzes', methods = ['POST'])
+  @app.route('/quiz/play', methods = ['POST'])
   def get_questions_for_quiz():
     body = request.get_json()
     category = body.get("quiz_category", None)
@@ -208,6 +202,14 @@ def create_app(test_config=None):
         "error": 405,
         "message":"method not allowed"
       }), 405
+    
+    @app.errorhandler(500)
+    def bad_request(error):
+      return jsonify({
+        "success": False,
+        "error": 500,
+        "message":"Internal Server Error"
+      }), 500
 
   return app
 
