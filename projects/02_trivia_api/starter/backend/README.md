@@ -64,29 +64,226 @@ One note before you delve into your tasks: for each endpoint you are expected to
 6. Create a POST endpoint to get questions based on category. 
 7. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
 8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
-9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
+9. Create error handlers for all expected errors including 400, 404, 422 and 500.
 
 REVIEW_COMMENT
+
 ```
-This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
-
-Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
-
-GET '/categories'
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category.
 - Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs.
 
+$ curl http://127.0.0.1:5000/categories
+{
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "success": true
+}
+```
+
+```
+GET '/questions'
+- Returns a list of questions object, success value and total number of questions
+- The result of this endpoint is paginated in groups of 10. A request argument is included to specify page number, starting at 1.
+
+$ curl http://127.0.0.1:5000/questions?page=2
+{
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "currentCategory": 3,
+  "questions": [
+    {
+      "answer": "Agra",
+      "category": 3,
+      "difficulty": 2,
+      "id": 15,
+      "question": "The Taj Mahal is located in which Indian city?"
+    },
+    {
+      "answer": "Escher",
+      "category": 2,
+      "difficulty": 1,
+      "id": 16,
+      "question": "Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?"
+    },
+    {
+      "answer": "Mona Lisa",
+      "category": 2,
+      "difficulty": 3,
+      "id": 17,
+      "question": "La Giaconda is better known as what?"
+    },
+    {
+      "answer": "One",
+      "category": 2,
+      "difficulty": 4,
+      "id": 18,
+      "question": "How many paintings did Van Gogh sell in his lifetime?"
+    },
+    {
+      "answer": "Jackson Pollock",
+      "category": 2,
+      "difficulty": 2,
+      "id": 19,
+      "question": "Which American artist was a pioneer of Abstract Expressionism, and a leading exponent of action painting?"
+    },
+    {
+      "answer": "The Liver",
+      "category": 1,
+      "difficulty": 4,
+      "id": 20,
+      "question": "What is the heaviest organ in the human body?"
+    },
+    {
+      "answer": "Alexander Fleming",
+      "category": 1,
+      "difficulty": 3,
+      "id": 21,
+      "question": "Who discovered penicillin?"
+    },
+    {
+      "answer": "Blood",
+      "category": 1,
+      "difficulty": 4,
+      "id": 22,
+      "question": "Hematology is a branch of medicine involving the study of what?"
+    },
+    {
+      "answer": "Scarab",
+      "category": 4,
+      "difficulty": 4,
+      "id": 23,
+      "question": "Which dung beetle was worshipped by the ancient Egyptians?"
+    }
+  ],
+  "success": true,
+  "totalQuestions": 19
+
+```
+
+```
+POST '/questions/add'
+- Create a new question with data provided.
+- Takes a json object as argument containing the question, the answer, the category and the difficulty.
+- Returns the success value an the id of the created question.
+
+$ curl -d "{\"question\":\"What year was the first model of the iPhone released?\",\"answer\":\"2007\", \"category\":4, \"difficulty\":1}" -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/questions/add
+{
+  "created": 30,
+  "success": true
+}
+```
+
+```
+DELETE '/questions/<question_id>'
+- Delete the specified questions from the database
+- Takes the question ID as an integer argument
+- Returns the id of the deleted question, success value of the request.
+
+$ curl -X DELETE http://127.0.0.1:5000/questions/30
+{
+  "deleted": 30,
+  "success": true
+}
+```
+
+```
+GET '/categories/<category_id>/questions
+- Fetch all the questions related to the given category.
+- Request arguments: None.
+- Returns a success value, a list of questions, total number of questions and the current category.
+
+$ curl -X GET http://127.0.0.1:5000/categories/3/questions
+{
+  "currentCategory": "Geography",
+  "questions": [
+    {
+      "answer": "Lake Victoria",
+      "category": 3,
+      "difficulty": 2,
+      "id": 13,
+      "question": "What is the largest lake in Africa?"
+    },
+    {
+      "answer": "The Palace of Versailles",
+      "category": 3,
+      "difficulty": 3,
+      "id": 14,
+      "question": "In which royal palace would you find the Hall of Mirrors?"
+    },
+    {
+      "answer": "Agra",
+      "category": 3,
+      "difficulty": 2,
+      "id": 15,
+      "question": "The Taj Mahal is located in which Indian city?"
+    }
+  ],
+  "success": true,
+  "totalQuestions": 19
+}
+```
+
+```
+POST '/questions/'
+- Search for questions containing the specified query.
+- Takes a search term as an argument.
+- Returns success value, the total number of questions and a list of questions.
+
+$ curl -d "{\"searchTerm\":\"Title\"}" -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/questions
+{
+  "currentCategory": null,
+  "questions": [
+    {
+      "answer": "Maya Angelou",
+      "category": 4,
+      "difficulty": 2,
+      "id": 5,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+    },
+    {
+      "answer": "Edward Scissorhands",
+      "category": 5,
+      "difficulty": 3,
+      "id": 6,
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    }
+  ],
+  "success": true,
+  "totalQuestions": 19
+}
+```
+
+```
+POST '/quiz/play'
+- Fetch a question based on a category and a list of previously asked questions.
+- Take a category object and a list of question ids, if the category id is 0, the endpoint will consider all the categories.
+- Returns a random question and a success value.
+
+$ curl -d "{\"quiz_category\":{\"id\":2, \"type\":\"Art\"}, \"previous_questions\":[16, 18]}" -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/quiz/play
+{
+  "question": {
+    "answer": "Mona Lisa",
+    "category": 2,
+    "difficulty": 3,
+    "id": 17,
+    "question": "La Giaconda is better known as what?"
+  },
+  "success": true
+}
 ```
 
 
