@@ -34,8 +34,8 @@ def create_app(test_config=None):
         categories = get_all_categories()
 
         try:
-            selection = Question.query.order_by(Question.id).
-            paginate(page, QUESTIONS_PER_PAGE).items
+            selection = Question.query.order_by(Question.id).\
+                        paginate(page, QUESTIONS_PER_PAGE).items
         except:
             abort(404)
 
