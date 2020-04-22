@@ -21,6 +21,11 @@ db_drop_and_create_all()
 
 
 # ROUTES
+@app.route('/')
+def index():
+    return jsonify({
+        'success':True
+    })
 @app.route('/drinks')
 def view_drink():
     selection = Drink.query.all()
@@ -97,7 +102,7 @@ def modify_drinks(payload, drink_id):
             'drinks': [drink.long()]
         })
 
-    except:
+    except Exception:
         abort(422)
 
 
@@ -117,7 +122,7 @@ def delete_drink(payload, drink_id):
             'success': True,
             'delete': drink.id
         })
-    except:
+    except Exception:
         db.session.rollback()
         abort(422)
     finally:
